@@ -1,12 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const Page = () => {
+const Whishlist = () => {
   return (
     <View>
-      <Text>index</Text>
+      <Text>Whishlist</Text>
     </View>
   )
 }
 
-export default Page
+export default Whishlist
