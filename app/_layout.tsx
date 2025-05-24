@@ -6,9 +6,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
+import * as SecureStore from "expo-secure-store"
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -19,6 +20,24 @@ export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
+const CLERK_PUBLISHACLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+
+const tokenCashe ={
+  async getToken(key:string){
+    try {
+      return  SecureStore.getItemAsync(key)
+    } catch (error) {
+      return null 
+    }
+  },
+  async saveToken(key:string,value:string){
+    try {
+      return SecureStore.setItemAsync(key,value)
+    } catch (error) {
+      return ;
+    }
+  }
+}
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -45,12 +64,23 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <ClerkProvider tokenCache={tokenCashe} publishableKey={CLERK_PUBLISHACLE_KEY!}>
+      {loaded && <RootLayoutNav />}
+    </ClerkProvider>
+  )
 }
 
 function RootLayoutNav() {
  const router = useRouter()
+ const {isLoaded,isSignedIn} = useAuth();
 
+ useEffect(() => {
+   if(isLoaded && !isSignedIn){
+    router.push('/(modals)/login');
+   }
+ }, [isLoaded])
+ 
   return (
   
       <Stack>
